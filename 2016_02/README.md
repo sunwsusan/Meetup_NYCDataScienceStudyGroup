@@ -1,7 +1,10 @@
-## Overview
-Thank you for attending yesterday's meetup!  The slides for the presentation are posted here.  If you have any comments, questions, or suggestions for topics for our upcoming meetups, feel free to give us a shout on our meetup [website](https://www.meetup.com/NYC-Data-Science-Study-Group/) or send me an email at sunwsusan@gmail.com
+## NYCDSSG February 1st, 2016 Meetup  
 
-## To Attendees
+> **Presentor**:		Susan Sun [@susanweisun](https://twitter.com/susanweisun), [Thomson Reuters](http://thomsonreuters.com/en.html)  
+> **Content**:			Feature Engineering  
+> **Venue**:			Shoutout to [DStillery](http://dstillery.com/) for hosting us!
+
+Thank you for attending yesterday's meetup!  The slides for the presentation are posted here.  If you have any comments, questions, or suggestions for topics for our upcoming meetups, feel free to give us a shout on our meetup [website](https://www.meetup.com/NYC-Data-Science-Study-Group/) or send me an email at sunwsusan@gmail.com
 
 As promised, here are the resources I would recommend, if you are interested in reading up more on feature engineering.
 
