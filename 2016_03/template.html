@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.node {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var graph = {{graph}}
+
+var svg;
+var group;
+var link;
+var node;
+
+var width = window.innerWidth,
+    height = window.innerHeight;
+
+var force = d3.layout.force()
+    .charge(-50)
+    .linkDistance(100)
+    .gravity(.02)
+    .size([width, height]);
+
+var zoom = d3.behavior.zoom()
+  .scaleExtent([.5, 5])
+  .on("zoom", function zoomed() {
+      group.attr("transform", "translate(" + d3.event.translate + ") scale(" + d3.event.scale + ")");
+  });
+
+var svg = d3.select("body")
+    .append("svg")
+    .attr("class", "svg")
+    .attr("pointer-events", "all")
+    .attr("width", width)
+    .attr("height", height)
+    .call(zoom);
+
+group = svg.append("g");
+forceLayout();
+
+function forceLayout() {
+    force
+        .nodes(graph.nodes)
+        .links(graph.links)
+        .start();
+
+    layout();
+
+    force.on("tick", function() {
+      link.attr("x1", function(d) { return d.source.x; })
+          .attr("y1", function(d) { return d.source.y; })
+          .attr("x2", function(d) { return d.target.x; })
+          .attr("y2", function(d) { return d.target.y; });
+
+      node.attr("cx", function(d) { return d.x; })
+          .attr("cy", function(d) { return d.y; });
+    });
+}
+
+function layout() {
+    link = group.selectAll(".link")
+        .data(graph.links)
+      .enter().append("line")
+        .attr("class", "link")
+        .style("stroke-width", 1)
+        .style("stroke-opacity", .3);
+
+    node = group.selectAll(".node")
+        .data(graph.nodes)
+      .enter().append("circle")
+        .attr("class", "node")
+        .attr("r", 5)
+        .style("fill", "blue")
+        .style("fill-opacity", function(d) { return d.w; })
+        .call(force.drag);
+}
+</script>
