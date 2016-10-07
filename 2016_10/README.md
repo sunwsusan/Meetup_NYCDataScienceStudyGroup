@@ -1,7 +1,9 @@
 ## NYCDSSG October 3rd, 2016 Meetup
 
 > **Presentor**:		Professor Tian Zheng [Twitter](https://twitter.com/tz33cu), [Github](https://github.com/tz33cu), [Homepage](http://www.stat.columbia.edu/~tzheng)
+
 > **Content**:			Statistical Thinking in Data Science  
+
 > **Venue**:			Thank you, Capital One Labs for hosting and sponsoring this event
 
 > Abstract: 
