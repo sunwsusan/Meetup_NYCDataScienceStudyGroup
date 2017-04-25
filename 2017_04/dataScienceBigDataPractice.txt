@@ -1,0 +1,305 @@
+
+Data Science and BigData Practice (Draft)
+
+Li Chen
+University of the District of Columbia
+lchenudc@gmail.com
+
+
+
+
+This document provides simple explanation to Data Science especially Mapreduce and Hadoop-Spark cloud computing.
+It also includes some commonly used testing examples obtained from Internet resources except the last one I add some
+code for testing.
+
+This document is a very rough draft and is only for people to learn
+or practice bigdata programming only. Please use it as it is. The
+author of this note was not the original programmer for the most of
+the programs except the last one.
+
+
+
+
+
+1. Bigdata Tools: Hadoop and Spark (Draft)
+
+The key of a system for BigData is to make a Petabyte problem parallelize-able meaning we can run it on hundreds even thousands
+computers in parallel.  \{it Apache Hadoop} is such an open-source system that enables applications to work with thousands of
+computation-independent devices.
+
+Hadoop was developed based the parallel computing model of MapReduce. The concept of Mapreduce was introduced in Google for
+bigTable and cloud computing in 2003. At the same time, D. Cutting was working on cloud computing as well.
+he tried to search for a mathematical or logical way to form his structure. When Cutting read the paper by J.Dean and S. Ghemawat,
+He immediately realized that Mapreduce is the one he needs.
+
+Hadoop might be the only software system that made industry happy for the last 50 years in parallel computing or distributed
+computing. However, Hadoop is too hard to use for none cs professionals. It use HDFS the distributed file system that is much
+slower than memory.
+
+A Berkeley lab started to develop Spark system to overcome the difficulty started in 2009. It is  very successful.
+
+To install Hadoop is very difficult, but you can easily install Spark. Spark is enough for me already. I have installed Spark for
+Scala (a computer language much similar to Python).  I also installed Spark for Python in Linux.  If you know Java, you can spend
+a little time to be able to program in Scala.
+
+My suggestion is not to program Java in Spark directly. It is because that there is no interactive Console programming
+environment.﻿
+
+
+2. A Simple Spark Program (draft)
+
+After you installed Spark Scala, you can just type "spark-shell" to run the spark console for Scala.
+
+Type "spark-shell", then you will see the console.
+
+~$ spark-shell
+.......
+scala>
+
+// copy and paste the following code
+
+val file = sc.textFile("inputTest.txt")
+val counts = file.flatMap(line => line.split(" ")).map(word => (word, 1)).reduceByKey(_ + _)
+counts.saveAsTextFile("./outputDir")
+counts.count()
+
+//===================
+
+Make sure you have a file in your current subdirectory called "inputTest.txt". My example it contains 6 lines of
+text.
+
+Spark Scala
+this is only a test file,
+this is a test file,
+this is a test
+this is a
+this
+
+
+In the directory of "outputDir" there are three files, one of them called part-00000 contains the following
+context:
+
+(this,5)
+(is,4)
+(file,,2)
+(only,1)
+(,1)
+(Scala,1)
+(test,3)
+
+This is the simplest version of the famous wordcount() program.
+
+
+3. Spark ML in Python
+
+Here is an example to use Machine Learning library of Spark. Using
+Python you can type "pyspark" to launch the python version of
+Spark--- spark console for Python.
+
+The input data set is in the subdirectory
+"data/mllib/kmeans_data.txt".
+
+#==== 1D kmeans  for pyspark ==============
+from __future__ import print_function
+
+# $example on$
+from numpy import array
+from math import sqrt
+# $example off$
+
+from pyspark import SparkContext
+# $example on$
+from pyspark.mllib.clustering import KMeans, KMeansModel
+# $example off$
+
+if __name__ == "__main__":
+    sc = SparkContext(appName="KMeansExample")  # SparkContext
+
+    # $example on$
+    # Load and parse the data
+    data = sc.textFile("data/mllib/kmeans_data.txt")
+    parsedData = data.map(lambda line: array([float(x) for x in line.split(' ')]))
+
+    # Build the model (cluster the data)
+    clusters = KMeans.train(parsedData, 2, maxIterations=10, initializationMode="random")
+
+    # Evaluate clustering by computing Within Set Sum of Squared Errors
+    def error(point):
+        center = clusters.centers[clusters.predict(point)]
+        return sqrt(sum([x**2 for x in (point - center)]))
+
+    WSSSE = parsedData.map(lambda point: error(point)).reduce(lambda x, y: x + y)
+    print("Within Set Sum of Squared Error = " + str(WSSSE))
+
+    # Save and load model
+    clusters.save(sc, "target/org/apache/spark/PythonKMeansExample/KMeansModel")
+    sameModel = KMeansModel.load(sc, "target/org/apache/spark/PythonKMeansExample/KMeansModel")
+    # $example off$
+
+sc.stop()
+
+
+4. A Sample Code for Google's TensorFlow
+
+TensorFlow is a machine learning package made by Google. Here is an
+example using kNN. You need to install Tensorflow software package
+after install Python 3. Use the Jupyter notebook will be better.
+The code can be downloaded from TensorFlow website.
+
+#-------------------
+#nearest neighbor
+# use "python3 knn.py" will work
+
+
+from __future__ import print_function
+
+import numpy as np
+import tensorflow as tf
+
+# Import MNIST data
+from tensorflow.examples.tutorials.mnist import input_data
+mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
+
+
+# In this example, we limit mnist data
+Xtr, Ytr = mnist.train.next_batch(1000) #5000 for training (nn candidates)
+Xte, Yte = mnist.test.next_batch(200) #200 for testing
+
+# tf Graph Input  28x28=784 pixel images  training and testing.
+# xtr is an element of Xtr
+xtr = tf.placeholder("float", [None, 784])
+xte = tf.placeholder("float", [784])
+
+# Nearest Neighbor calculation using L1 Distance
+# Calculate L1 Distance
+distance = tf.reduce_sum(tf.abs(tf.add(xtr, tf.neg(xte))), reduction_indices=1)
+# add neg is the subtractiom  ; distance is the function will be used later
+# Prediction: Get min distance index (Nearest neighbor)
+pred = tf.arg_min(distance, 0)
+
+# if distance is not 0 that means they are not the same.
+
+# pred is a function also used later
+
+accuracy = 0.
+
+# Initializing the variables
+init = tf.initialize_all_variables()
+
+# Launch the graph
+# It means the calculation logic/alg or method . It is the tensor flow
+#
+with tf.Session() as sess:   # sess is the name of the session.
+    sess.run(init)
+
+    # loop over test data
+    for i in range(len(Xte)):
+        # Get nearest neighbor
+        nn_index = sess.run(pred, feed_dict={xtr: Xtr, xte: Xte[i, :]})
+        # compare all pairs in Xtr and Xte find out the L1 distance |x-y|
+        # Get nearest neighbor class label and compare it to its true label
+        print("Test", i, "Prediction:", np.argmax(Ytr[nn_index]), \
+            "True Class:", np.argmax(Yte[i]))
+        # Calculate accuracy
+        if np.argmax(Ytr[nn_index]) == np.argmax(Yte[i]):
+            accuracy += 1./len(Xte)
+    print("Done!")
+    print("Accuracy:", accuracy)
+
+
+5. A Testing Code for Line Segment Intersections in Spark Scala
+
+The following code is made by Li Chen for his computational geometry class
+for finding all intersections of a set of line segments. "timeCalc"
+will report the time spending. Send email to lchen@udc.edu if
+you have some good testing results.
+
+==============================spark code===========================
+
+var N=5000;
+var startListx: Array[Int] = new Array[Int](N);
+var startListy: Array[Int] = new Array[Int](N);
+var endListx: Array[Int] = new Array[Int](N);
+var endListy: Array[Int] = new Array[Int](N);
+
+val rand = new scala.util.Random;
+var InsctList : List[(Float,Float)] =Nil;
+
+
+var i=0;
+var j=0;
+for( i<-0 to startListx.length-1) {  // for ( i <- 0 to (myList.length - 1)) {
+
+                   startListx(i)=rand.nextInt((590 - 100) + 1) + 100;
+
+                     startListy(i)  =  rand.nextInt((590 - 100) + 1) + 100;
+                     endListx(i)=rand.nextInt((590 - 100) + 1) + 100;
+
+                     endListy(i)  =  rand.nextInt((590 - 100) + 1) + 100;
+ }
+
+
+ def  lineSegIntersection(p0_x: Float, p0_y: Float,  p1_x: Float,  p1_y: Float,  p2_x: Float,  p2_y: Float,  p3_x: Float,   p3_y:
+ Float): (Float, Float) =
+    {
+
+
+      val s1_x = p1_x - p0_x;
+      val s1_y = p1_y - p0_y;
+      val s2_x = p3_x - p2_x;
+      val s2_y = p3_y - p2_y;
+
+      val denom =(-s2_x * s1_y + s1_x * s2_y);
+      if (denom == 0.0) { // Lines are parallel.
+        return (-1.toFloat,-1.toFloat);    // need to return the segment if they intersect. check if point is in a segment
+      }
+
+    val s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / denom;
+    val t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / denom;
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    {
+        // Collision detected
+
+           val i_x = p0_x + (t * s1_x);
+
+           val i_y = p0_y + (t * s1_y);
+
+           // intersectPoint=new Point((int)i_x, (int)i_y);
+           // intersectList.add(intersectPoint);
+        return  (i_x.toFloat,i_y.toFloat) ;
+    }
+     return (-1.toFloat,-1.toFloat);  // No collision
+
+    } // function
+
+
+
+    import scala.collection.mutable.ArrayBuffer
+def calci(ii: Int): ArrayBuffer[(Float,Float)]  =
+{ val myInsctList = ArrayBuffer[(Float,Float)]() ; // = Nil;
+    var jj=0;
+    for(jj<-ii+1 to (5000-1) ){
+     val ppoint =lineSegIntersection(startListx(ii), startListy(ii), endListx(ii), endListy(ii), startListx(jj), startListy(jj),
+     endListx(jj), endListy(jj));
+     if (ppoint._1>0)  {
+             myInsctList +=ppoint;
+       }
+    }
+             return myInsctList;
+ }  //
+
+
+     val prev=System.currentTimeMillis();
+     val ISCTRdd = sc.parallelize(0 to N-1).map { i => calci(i);}.collect();
+     val timeCalc=System.currentTimeMillis()-prev;
+
+timeCalc
+
+//-------------------------------------------------
+timeCalc
+
+// Long = 18965  for N= 5000
+
+scala> timeCalc
+res19: Long = 18965
